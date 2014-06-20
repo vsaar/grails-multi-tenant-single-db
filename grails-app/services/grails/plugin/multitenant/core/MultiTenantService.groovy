@@ -28,8 +28,12 @@ class MultiTenantService {
             if(log.debugEnabled) log.debug "doWithTenantId runin with tenant - $tenantId"
 
             hibernateTemplates.withNewSession {
-                hibernateTemplates.withTransaction(PROPAGATION_REQUIRES_NEW) {
+                hibernateTemplates.withTransaction(PROPAGATION_REQUIRES_NEW) { status ->
                     callback.call()
+
+                    if(status.isRollbackOnly()) {
+                        status.setRollbackOnly()
+                    }
                 }
             }
         }
